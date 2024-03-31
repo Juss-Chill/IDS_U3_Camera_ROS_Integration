@@ -172,6 +172,66 @@ bool BackEnd::openDevice()
                 // Auto exposure is not writeable
             }
 
+            try
+            {
+                // Set auto White balance continuous
+                // m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("ExposureAuto")->SetCurrentEntry("Continuous");
+                // Determine the current entry of BalanceWhiteAuto
+                std::string value = m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("BalanceWhiteAuto")->CurrentEntry()->SymbolicValue();
+                // Get a list of all available entries of BalanceWhiteAuto
+                auto allEntries = m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("BalanceWhiteAuto")->Entries();
+                std::vector<std::shared_ptr<peak::core::nodes::EnumerationEntryNode>> availableEntries;
+                for(const auto & entry : allEntries)
+                {
+                    if ((entry->AccessStatus()!=peak::core::nodes::NodeAccessStatus::NotAvailable)
+                            && (entry->AccessStatus()!=peak::core::nodes::NodeAccessStatus::NotImplemented))
+                    {
+                        availableEntries.emplace_back(entry);
+                    }
+                }
+                // Set BalanceWhiteAuto to "Off"
+                m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("BalanceWhiteAuto")->SetCurrentEntry("Continuous");
+            
+            }
+            catch (const peak::core::NotFoundException&)
+            {
+                // Auto White balance is not available
+            }
+            catch (const peak::core::BadAccessException&)
+            {
+                // Auto White balance is not writeable
+            }
+
+            try
+            {
+                // Set auto Gain
+                // Determine the current entry of GainAuto
+                std::string value = m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("GainAuto")->CurrentEntry()->SymbolicValue();
+                // Get a list of all available entries of GainAuto
+                auto allEntries = m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("GainAuto")->Entries();
+                std::vector<std::shared_ptr<peak::core::nodes::EnumerationEntryNode>> availableEntries;
+                for(const auto & entry : allEntries)
+                {
+                    if ((entry->AccessStatus()!=peak::core::nodes::NodeAccessStatus::NotAvailable)
+                            && (entry->AccessStatus()!=peak::core::nodes::NodeAccessStatus::NotImplemented))
+                    {
+                        availableEntries.emplace_back(entry);
+                    }
+                }
+                // Set GainAuto to "Off"
+                m_nodemapRemoteDevice->FindNode<peak::core::nodes::EnumerationNode>("GainAuto")->SetCurrentEntry("Continuous");
+                
+            
+            }
+            catch (const peak::core::NotFoundException&)
+            {
+                // Auto Gain is not available
+            }
+            catch (const peak::core::BadAccessException&)
+            {
+                // Auto Gain is not writeable
+            }
+
             bool enableChunks = true;
 
             try
