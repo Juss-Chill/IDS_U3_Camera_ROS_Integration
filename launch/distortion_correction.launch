@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="distortion_correction" pkg="image_proc" type="image_proc" />
+
+</launch>

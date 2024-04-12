@@ -1,8 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-    <node name="ids_ros_node" pkg="ids_ros" type="ids_ros_node" />
-<!-- </launch>
+  <group ns = "right_cam"> 
+    <node name="raw_image_pub" pkg="ids_ros" type="ids_ros_node" />
 
-<launch> -->
-  <node type="rviz" name="rviz" pkg="rviz" args="$-d $(find ids_ros)/rviz/rviz.rviz" />
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ids_ros)/config/rviz.rviz" />
+
+    <rosparam file="$(find ids_ros)/config/right_cam_info.yaml" />
+
+    <!-- Include another launch file -->
+    <!-- <include file="$(find ids_ros)/launch/distortion_correction.launch" /> -->
+  </group>
 </launch>

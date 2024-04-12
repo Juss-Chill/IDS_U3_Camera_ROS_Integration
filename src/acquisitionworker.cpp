@@ -56,7 +56,60 @@ void AcquisitionWorker::start()
     camera_bag.open("/home/shreyash/workspace/ids_ros_ws/src/front_camera.bag", rosbag::bagmode::Write);
     camera_bag.setCompression(rosbag::compression::LZ4);
 #endif
-    pub = it.advertise("camera/image", 100);
+    pub = it.advertise("/right_cam/image_raw", 100);
+    right_cam_info_pub = nh.advertise<sensor_msgs::CameraInfo>("/right_cam/camera_info", 10);
+
+    nh.getParam("/right_cam/image_width", img_width);
+    nh.getParam("/right_cam/image_height", img_height);
+    nh.getParam("/right_cam/distortion_model", distortion_model);
+
+    nh.getParam("/right_cam/distortion_coefficients/data", D);
+    nh.getParam("/right_cam/camera_matrix/data", K);
+    nh.getParam("/right_cam/rectification_matrix/data", R);
+    nh.getParam("/right_cam/projection_matrix/data", P);
+
+    right_cam_info.height = img_height;
+    right_cam_info.width = img_width;
+    right_cam_info.distortion_model = distortion_model;
+
+    right_cam_info.D = D;
+
+    // K is of type std::vector<double>, converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+    boost::array<double, 9> K_array;
+    if (K.size() == 9) {
+        for (size_t i = 0; i < 9; ++i) {
+            K_array[i] = K[i];
+        }
+    } else {
+        // Error handler
+        throw std::invalid_argument("K vector must have exactly 9 elements");
+    }
+    right_cam_info.K = K_array;
+
+    // R is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+    boost::array<double, 9> R_array;
+    if (R.size() == 9) {
+        for (size_t i = 0; i < 9; ++i) {
+            R_array[i] = R[i];
+        }
+    } else {
+        // Error handler
+        throw std::invalid_argument("R vector must have exactly 9 elements");
+    }
+    right_cam_info.R = R_array;
+
+    // P is of type std::vector<double> converting the vector data to boost::array<double> for the sensor_msgs/cameraInfo
+    boost::array<double, 12> P_array;
+    if (P.size() == 12) {
+        for (size_t i = 0; i < 12; ++i) {
+            P_array[i] = P[i];
+        }
+    } else {
+        // Error handler
+        throw std::invalid_argument("P vector must have exactly 12 elements");
+    }
+    right_cam_info.P = P_array;
+
 
     try
     {
@@ -135,6 +188,9 @@ void AcquisitionWorker::start()
             head_info.stamp = ros::Time::now();
             head_info.frame_id = "sensor_origin";
 
+            // header info for the camera info msg
+            right_cam_info.header = head_info;
+
             sensor_msgs::Image image_msg;
             image_msg.header = head_info;
 
@@ -145,7 +201,9 @@ void AcquisitionWorker::start()
                                     image_processed.Width()*4,
                                     data_ptr
                                     );     
-            pub.publish(image_msg);
+            pub.publish(image_msg); // Publishing raw image
+            
+            right_cam_info_pub.publish(right_cam_info); // Publish the camera matrix details
 
             m_frameCounter++;
         }

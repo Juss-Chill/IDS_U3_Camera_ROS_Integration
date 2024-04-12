@@ -31,6 +31,8 @@
 #include <QObject>
 #include <QString>
 #include <QImage>
+#include <string>
+#include <vector>
 
 #include <peak/peak.hpp>
 #include <peak_ipl/peak_ipl.hpp>
@@ -41,6 +43,7 @@
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <ros/console.h>
 
 class AcquisitionWorker : public QObject
 {
@@ -76,7 +79,17 @@ private:
 
     ros::NodeHandle nh;
     image_transport::Publisher pub;
-    // sensor_msgs::ImagePtr msg;
+
+    // cameraInfo
+    ros::Publisher right_cam_info_pub;
+    sensor_msgs::CameraInfo right_cam_info = sensor_msgs::CameraInfo();
+    int img_width;
+    int img_height;
+    std::string distortion_model;
+    std::vector<double> D; // Distortion Coeffs
+    std::vector<double> K; // Intrinsic camera matrix
+    std::vector<double> R; // rectification Matrix
+    std::vector<double> P; // Projection or Camera Matrix
 
 signals:
     void imageReceived(QImage image, double chunkDataExposureTime_ms);
